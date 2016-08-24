@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/batch"
+	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/batch
+http://www.springframework.org/schema/batch/spring-batch.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/util/spring-context.xsd
+http://www.springframework.org/schema/jdbc
+http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
+
+	<!-- Initialize the database if tables do not already exist -->
+	<jdbc:initialize-database enabled="true"
+		data-source="dataSource" ignore-failures="ALL">
+		<jdbc:script
+			location="classpath:init-data.sql"
+			execution="INIT" />
+	</jdbc:initialize-database>
+
+	<beans:bean id="jobRepository"
+		class="org.springframework.batch.core.repository.support.JobRepositoryFactoryBean">
+		<beans:property name="dataSource" ref="dataSource" />
+		<beans:property name="transactionManager" ref="transactionManager" />
+	</beans:bean>
+
+	<beans:bean id="jobRegistry"
+		class="org.springframework.batch.core.configuration.support.MapJobRegistry" />
+
+	<beans:bean id="jobLauncher"
+		class="org.springframework.batch.core.launch.support.SimpleJobLauncher"
+		p:jobRepository-ref="jobRepository" />
+
+	<beans:bean id="jobRegistryBeanPostProcessor"
+		class="org.springframework.batch.core.configuration.support.JobRegistryBeanPostProcessor"
+		p:jobRegistry-ref="jobRegistry" />
+
+</beans:beans>
